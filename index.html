@@ -959,6 +959,10 @@
             color: #c9a87c;
         }
     </style>
+ <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        emailjs.init("qmLyt70JU0pHL5GXc");
+    </script>
 </head>
 <body>
     <header>
@@ -1371,461 +1375,469 @@
         </div>
     </footer>
 
-    <script>
-        const burger = document.getElementById('burger');
-        const navLinks = document.getElementById('navLinks');
+<script>
+    // ========== НАСТРОЙКИ ==========
+    const TELEGRAM_BOT_TOKEN = '8781246097:AAH6f_p0SCBAySoByP-hG-hjrJ3qoXPPGD8';
+    const TELEGRAM_CHAT_ID = '863776657';
+    const EMAILJS_SERVICE_ID = 'service_1251zcu';
+    const EMAILJS_TEMPLATE_ID = 'template_xm2v2xb';
 
-        burger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-            });
-        });
-
-        let currentStep = 1;
-
-        function nextStep(step) {
-            const currentStepEl = document.querySelector(`.step[data-step="${currentStep}"]`);
-            const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
-            let valid = true;
-
-            inputs.forEach(input => {
-                if (input.type === 'radio') {
-                    const radioGroup = document.querySelector(`input[name="${input.name}"]:checked`);
-                    if (!radioGroup) {
-                        valid = false;
-                    }
-                } else if (!input.value.trim()) {
-                    valid = false;
-                    input.style.borderColor = '#c9a87c';
-                    setTimeout(() => {
-                        input.style.borderColor = '#e0e0e0';
-                    }, 2000);
-                }
-            });
-
-            if (!valid) {
-                alert('Пожалуйста, заполните все обязательные поля');
-                return;
+    // ========== ФУНКЦИИ ОТПРАВКИ ==========
+    function sendToTelegram(message) {
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        }).then(response => {
+            if (response.ok) {
+                console.log('✅ Отправлено в Telegram');
+            } else {
+                console.error('❌ Ошибка Telegram');
             }
-
-            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
-            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-            currentStep = step;
-
-            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function prevStep(step) {
-            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.progress-step[data-step="${step}"]`).classList.remove('completed');
-            document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
-            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-            currentStep = step;
-        }
-
-        document.querySelectorAll('.furniture-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.furniture-card').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                this.querySelector('input[type="radio"]').checked = true;
-            });
+        }).catch(error => {
+            console.error('❌ Ошибка Telegram:', error);
         });
+    }
 
-        function phoneMask(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length > 0) {
-                if (value[0] === '7' || value[0] === '8') {
-                    value = value.substring(1);
-                }
-                let formattedValue = '+7';
-                if (value.length > 0) {
-                    formattedValue += ' (' + value.substring(0, 3);
-                }
-                if (value.length >= 4) {
-                    formattedValue += ') ' + value.substring(3, 6);
-                }
-                if (value.length >= 7) {
-                    formattedValue += '-' + value.substring(6, 8);
-                }
-                if (value.length >= 9) {
-                    formattedValue += '-' + value.substring(8, 10);
-                }
-                input.value = formattedValue;
+    function sendToEmail(data) {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
+            .then(function() {
+                console.log('✅ Отправлено на Email');
+            })
+            .catch(function(error) {
+                console.error('❌ Ошибка Email:', error);
+            });
+    }
+
+    // ========== МЕНЮ ==========
+    const burger = document.getElementById('burger');
+    const navLinks = document.getElementById('navLinks');
+
+    burger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+        });
+    });
+
+    // ========== КОНСТРУКТОР ==========
+    let currentStep = 1;
+
+    function nextStep(step) {
+        const currentStepEl = document.querySelector(`.step[data-step="${currentStep}"]`);
+        const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
+        let valid = true;
+
+        inputs.forEach(input => {
+            if (input.type === 'radio') {
+                const radioGroup = document.querySelector(`input[name="${input.name}"]:checked`);
+                if (!radioGroup) valid = false;
+            } else if (!input.value.trim()) {
+                valid = false;
+                input.style.borderColor = '#c9a87c';
+                setTimeout(() => {
+                    input.style.borderColor = '#e0e0e0';
+                }, 2000);
             }
+        });
+
+        if (!valid) {
+            alert('Пожалуйста, заполните все обязательные поля');
+            return;
         }
 
-        document.getElementById('phoneInput').addEventListener('input', function() {
-            phoneMask(this);
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
+        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+        currentStep = step;
+
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function prevStep(step) {
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${step}"]`).classList.remove('completed');
+        document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
+        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+        currentStep = step;
+    }
+
+    document.querySelectorAll('.furniture-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.furniture-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
         });
+    });
 
-        document.getElementById('callbackPhoneInput').addEventListener('input', function() {
-            phoneMask(this);
-        });
-
-        document.getElementById('measurerPhoneInput').addEventListener('input', function() {
-            phoneMask(this);
-        });
-
-        // ПРАВИЛЬНАЯ отправка формы конструктора через FormSubmit
-        document.getElementById('furnitureForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const data = {};
-            formData.forEach((value, key) => { data[key] = value; });
-
-            // Создаем скрытую форму для отправки
-            const tempForm = document.createElement('form');
-            tempForm.action = 'https://formsubmit.co/mebel-proui@mail.ru';
-            tempForm.method = 'POST';
-            tempForm.style.display = 'none';
-
-            // Добавляем скрытые поля FormSubmit
-            const fields = {
-                '_subject': '🛠️ Новая заявка из конструктора',
-                '_captcha': 'false',
-                '_template': 'table',
-                'Тип мебели': data.furnitureType,
-                'Размеры (ШxВxГ)': `${data.width}x${data.height}x${data.depth} см`,
-                'Материал фасада': data.facadeMaterial,
-                'Материал корпуса': data.bodyMaterial,
-                'Цвет': data.color,
-                'Пожелания': data.wishes || 'Нет',
-                'Имя клиента': data.clientName,
-                'Телефон': data.phone,
-                'Email клиента': data.email || 'Не указан',
-                'Адрес для замера': data.address || 'Не указан'
-            };
-
-            for (const [key, value] of Object.entries(fields)) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                tempForm.appendChild(input);
+    // ========== МАСКА ТЕЛЕФОНА ==========
+    function phoneMask(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value[0] === '7' || value[0] === '8') {
+                value = value.substring(1);
             }
-
-            document.body.appendChild(tempForm);
-            tempForm.submit();
-
-            // Сохраняем в localStorage
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.push({ ...data, date: new Date().toISOString(), id: Date.now() });
-            localStorage.setItem('orders', JSON.stringify(orders));
-
-            // Показываем сообщение успеха
-            document.querySelectorAll('.step').forEach(step => step.style.display = 'none');
-            document.querySelector('.progress-bar').style.display = 'none';
-            document.getElementById('successMessage').classList.add('show');
-        });
-
-        function resetForm() {
-            document.getElementById('furnitureForm').reset();
-            document.querySelectorAll('.step').forEach(step => {
-                step.classList.remove('active');
-                step.style.display = '';
-            });
-            document.querySelectorAll('.progress-step').forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if (index === 0) step.classList.add('active');
-            });
-            document.querySelector('.step[data-step="1"]').classList.add('active');
-            document.getElementById('successMessage').classList.remove('show');
-            document.querySelector('.progress-bar').style.display = 'flex';
-            document.querySelectorAll('.furniture-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            currentStep = 1;
+            let formattedValue = '+7';
+            if (value.length > 0) formattedValue += ' (' + value.substring(0, 3);
+            if (value.length >= 4) formattedValue += ') ' + value.substring(3, 6);
+            if (value.length >= 7) formattedValue += '-' + value.substring(6, 8);
+            if (value.length >= 9) formattedValue += '-' + value.substring(8, 10);
+            input.value = formattedValue;
         }
+    }
 
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const portfolioItems = document.querySelectorAll('.portfolio-item');
+    document.getElementById('phoneInput').addEventListener('input', function() {
+        phoneMask(this);
+    });
+    document.getElementById('callbackPhoneInput').addEventListener('input', function() {
+        phoneMask(this);
+    });
+    document.getElementById('measurerPhoneInput').addEventListener('input', function() {
+        phoneMask(this);
+    });
 
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
+    // ========== ФОРМА КОНСТРУКТОРА ==========
+    document.getElementById('furnitureForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => { data[key] = value; });
 
-                const filter = this.getAttribute('data-filter');
+        const currentDate = new Date().toLocaleString('ru-RU');
 
-                portfolioItems.forEach(item => {
-                    if (filter === 'all') {
-                        item.classList.remove('hidden');
-                        setTimeout(() => {
-                            item.style.opacity = '1';
-                            item.style.transform = 'scale(1)';
-                        }, 10);
-                    } else if (item.getAttribute('data-category') === filter) {
-                        item.classList.remove('hidden');
-                        setTimeout(() => {
-                            item.style.opacity = '1';
-                            item.style.transform = 'scale(1)';
-                        }, 10);
-                    } else {
-                        item.style.opacity = '0';
-                        item.style.transform = 'scale(0.8)';
-                        setTimeout(() => {
-                            item.classList.add('hidden');
-                        }, 300);
-                    }
-                });
-            });
-        });
+        const telegramMessage = `
+🛠️ <b>НОВАЯ ЗАЯВКА ИЗ КОНСТРУКТОРА</b>
 
-                const portfolioData = [
-            {
-                title: 'Современная кухня',
-                description: 'Кухонный гарнитур в серо-белых цветах. Стильное сочетание светлых и темных оттенков. Размер: 3.5 метра. Встроенная техника: духовой шкаф, варочная панель, вытяжка. Стоимость: от 200 000 руб.'
-            },
-            {
-                title: 'Кухонный гарнитур',
-                description: 'Кухня в бело-деревянных цветах. Фасады: белый МДФ в сочетании с деревянной столешницей. Современный дизайн, практичное решение. Размер: 2.5 метра. Стоимость: от 150 000 руб.'
-            },
-            {
-                title: 'Шкаф-купе с зеркалом',
-                description: 'Встроенный шкаф-купе. Двери: зеркало + ЛДСП. Внутреннее наполнение: полки, штанги, ящики. Размер: 3x2.4 метра. Стоимость: от 95 000 руб.'
-            },
-            {
-                title: 'Гардеробная система',
-                description: 'Полноценная гардеробная комната. Материал: ЛДСП белый + хромированные элементы. Размер: 4x2.4 метра. Включает: штанги, полки, ящики, обувницы, LED-освещение. Стоимость: от 150 000 руб.'
-            },
-            {
-                title: 'Стенка в гостиную',
-                description: 'Модульная система для гостиной. Материал: ЛДСП белый + дуб сонома. Включает: тумбу под ТВ, навесные шкафы, стеллажи. Размер: 2.2 метра. Стоимость: от 45 000 руб.'
-            },
-            {
-                title: 'Детская комната',
-                description: 'Мебельный комплекс для детской. Материал: ЛДСП нежные цвета, экологически чистый. Размер: 3 метра. Стоимость: от 120 000 руб.'
-            },
-            {
-                title: 'Прихожая',
-                description: 'Компактная система хранения для прихожей. Материал: ЛДСП белый. Внутреннее наполнение: полки, штанги, ящики. Размер: 3 метра. Стоимость: от 125 000 руб.'
-            },
-            {
-                title: 'Спальня',
-                description: 'Комплект мебели для спальни. Кровать, прикроватные тумбы. Материал: ЛДСП, стильный дизайн. Размер под заказ. Стоимость: от 95 000 руб.'
-            }
-        ];
+📦 Тип: ${data.furnitureType}
+📏 Размеры: ${data.width}×${data.height}×${data.depth} см
+🎨 Фасад: ${data.facadeMaterial}
+🔧 Корпус: ${data.bodyMaterial}
+🌈 Цвет: ${data.color}
+💬 Пожелания: ${data.wishes || 'Нет'}
 
-        function openModal(index) {
-            const modal = document.getElementById('modal');
-            const modalImage = document.getElementById('modalImage');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalDescription = document.getElementById('modalDescription');
+👤 Имя: ${data.clientName}
+📞 Телефон: ${data.phone}
+📧 Email: ${data.email || 'Не указан'}
+📍 Адрес: ${data.address || 'Не указан'}
+🕐 Дата: ${currentDate}`;
 
-            modalImage.src = portfolioItems[index].querySelector('img').src;
-            modalTitle.textContent = portfolioData[index].title;
-            modalDescription.textContent = portfolioData[index].description;
-
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        function openCallModal() {
-            document.getElementById('callModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeCallModal() {
-            document.getElementById('callModal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        function openMeasurerModal() {
-            document.getElementById('measurerModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMeasurerModal() {
-            document.getElementById('measurerModal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Форма обратного звонка
-        document.getElementById('callbackForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-
-            const tempForm = document.createElement('form');
-            tempForm.action = 'https://formsubmit.co/mebel-proui@mail.ru';
-            tempForm.method = 'POST';
-            tempForm.style.display = 'none';
-
-            const fields = {
-                '_subject': '📞 Заказ обратного звонка',
-                '_captcha': 'false',
-                '_template': 'table',
-                'Имя': formData.get('callbackName'),
-                'Телефон': formData.get('callbackPhone')
-            };
-
-            for (const [key, value] of Object.entries(fields)) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                tempForm.appendChild(input);
-            }
-
-            document.body.appendChild(tempForm);
-            tempForm.submit();
-
-            const callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
-            callbacks.push({
-                name: formData.get('callbackName'),
-                phone: formData.get('callbackPhone'),
-                type: 'callback',
-                date: new Date().toISOString()
-            });
-            localStorage.setItem('callbacks', JSON.stringify(callbacks));
-        });
-
-        // Форма вызова замерщика
-        document.getElementById('measurerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-
-            const tempForm = document.createElement('form');
-            tempForm.action = 'https://formsubmit.co/mebel-proui@mail.ru';
-            tempForm.method = 'POST';
-            tempForm.style.display = 'none';
-
-            const fields = {
-                '_subject': '📏 Вызов замерщика',
-                '_captcha': 'false',
-                '_template': 'table',
-                'Имя': formData.get('measurerName'),
-                'Телефон': formData.get('measurerPhone'),
-                'Адрес в Усть-Илимске': formData.get('measurerAddress')
-            };
-
-            for (const [key, value] of Object.entries(fields)) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                tempForm.appendChild(input);
-            }
-
-            document.body.appendChild(tempForm);
-            tempForm.submit();
-
-            const measurers = JSON.parse(localStorage.getItem('measurers') || '[]');
-            measurers.push({
-                name: formData.get('measurerName'),
-                phone: formData.get('measurerPhone'),
-                address: formData.get('measurerAddress'),
-                type: 'measurer',
-                date: new Date().toISOString()
-            });
-            localStorage.setItem('measurers', JSON.stringify(measurers));
-        });
-
-        window.addEventListener('click', function(e) {
-            const modal = document.getElementById('modal');
-            const callModal = document.getElementById('callModal');
-            const measurerModal = document.getElementById('measurerModal');
-            
-            if (e.target === modal) closeModal();
-            if (e.target === callModal) closeCallModal();
-            if (e.target === measurerModal) closeMeasurerModal();
-        });
-
-        function updateTimer() {
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 7);
-            endDate.setHours(23, 59, 59, 999);
-            
-            const now = new Date();
-            const distance = endDate - now;
-
-            if (distance < 0) {
-                document.querySelector('.timer').innerHTML = '<p style="font-size:22px">Акция завершена! Следите за новыми предложениями</p>';
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById('days').textContent = days.toString().padStart(2, '0');
-            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-        }
-
-        updateTimer();
-        setInterval(updateTimer, 1000);
-
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const headerHeight = document.querySelector('header').offsetHeight;
-                    const targetPosition = target.offsetTop - headerHeight - 20;
-                    window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-                }
-            });
-        });
-
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
+        const emailData = {
+            subject: '🛠️ Новая заявка из конструктора',
+            client_name: data.clientName,
+            phone: data.phone,
+            email: data.email || 'Не указан',
+            address: data.address || 'Не указан',
+            furniture_type: data.furnitureType,
+            dimensions: `${data.width}×${data.height}×${data.depth} см`,
+            facade_material: data.facadeMaterial,
+            body_material: data.bodyMaterial,
+            color: data.color,
+            wishes: data.wishes || 'Нет',
+            date: currentDate
         };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+        sendToTelegram(telegramMessage);
+        sendToEmail(emailData);
+
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        orders.push({ ...data, date: new Date().toISOString(), id: Date.now() });
+        localStorage.setItem('orders', JSON.stringify(orders));
+
+        document.querySelectorAll('.step').forEach(step => step.style.display = 'none');
+        document.querySelector('.progress-bar').style.display = 'none';
+        document.getElementById('successMessage').classList.add('show');
+    });
+
+    function resetForm() {
+        document.getElementById('furnitureForm').reset();
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.remove('active');
+            step.style.display = '';
+        });
+        document.querySelectorAll('.progress-step').forEach((step, index) => {
+            step.classList.remove('active', 'completed');
+            if (index === 0) step.classList.add('active');
+        });
+        document.querySelector('.step[data-step="1"]').classList.add('active');
+        document.getElementById('successMessage').classList.remove('show');
+        document.querySelector('.progress-bar').style.display = 'flex';
+        document.querySelectorAll('.furniture-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        currentStep = 1;
+    }
+
+    // ========== ПОРТФОЛИО ==========
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.getAttribute('data-filter');
+
+            portfolioItems.forEach(item => {
+                if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                    item.classList.remove('hidden');
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    }, 10);
+                } else {
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        item.classList.add('hidden');
+                    }, 300);
                 }
             });
-        }, observerOptions);
-
-        document.querySelectorAll('.portfolio-item, .contact-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
         });
+    });
 
-        document.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'scale(1.02)';
-            });
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'scale(1)';
-            });
+    const portfolioData = [
+        {
+            title: 'Современная кухня',
+            description: 'Кухонный гарнитур в серо-белых цветах. Стильное сочетание светлых и темных оттенков. Размер: 3.5 метра. Встроенная техника. Стоимость: от 180 000 руб.'
+        },
+        {
+            title: 'Кухонный гарнитур',
+            description: 'Кухня в бело-деревянных цветах. Фасады: белый МДФ с деревянной столешницей. Размер: 4 метра. Стоимость: от 210 000 руб.'
+        },
+        {
+            title: 'Шкаф-купе с зеркалом',
+            description: 'Встроенный шкаф-купе. Двери: зеркало + ЛДСП. Размер: 3x2.4 метра. LED-подсветка. Стоимость: от 95 000 руб.'
+        },
+        {
+            title: 'Гардеробная система',
+            description: 'Полноценная гардеробная комната. ЛДСП белый + хромированные элементы. Размер: 4x2.5 метра. Стоимость: от 150 000 руб.'
+        },
+        {
+            title: 'Стенка в гостиную',
+            description: 'Модульная система для гостиной. ЛДСП дуб сонома. Тумба под ТВ, навесные шкафы, стеллажи. Стоимость: от 85 000 руб.'
+        },
+        {
+            title: 'Детская комната',
+            description: 'Мебельный комплекс для детской. Яркие цвета, экологически чистый материал. Закругленные углы. Стоимость: от 120 000 руб.'
+        },
+        {
+            title: 'Прихожая',
+            description: 'Компактная система хранения. ЛДСП венге. Шкаф, обувница, зеркало, вешалка. Стоимость: от 45 000 руб.'
+        },
+        {
+            title: 'Спальня',
+            description: 'Комплект мебели для спальни. Кровать, тумбы, шкаф. Размер под заказ. Стоимость: от 95 000 руб.'
+        }
+    ];
+
+    function openModal(index) {
+        const modal = document.getElementById('modal');
+        document.getElementById('modalImage').src = portfolioItems[index].querySelector('img').src;
+        document.getElementById('modalTitle').textContent = portfolioData[index].title;
+        document.getElementById('modalDescription').textContent = portfolioData[index].description;
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function openCallModal() {
+        document.getElementById('callModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCallModal() {
+        document.getElementById('callModal').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function openMeasurerModal() {
+        document.getElementById('measurerModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMeasurerModal() {
+        document.getElementById('measurerModal').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    // ========== ФОРМА ОБРАТНОГО ЗВОНКА ==========
+    document.getElementById('callbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const currentDate = new Date().toLocaleString('ru-RU');
+
+        const telegramMessage = `
+📞 <b>ЗАКАЗ ОБРАТНОГО ЗВОНКА</b>
+
+👤 Имя: ${formData.get('callbackName')}
+📞 Телефон: ${formData.get('callbackPhone')}
+🕐 Дата: ${currentDate}`;
+
+        const emailData = {
+            subject: '📞 Заказ обратного звонка',
+            client_name: formData.get('callbackName'),
+            phone: formData.get('callbackPhone'),
+            email: '-', address: '-',
+            furniture_type: 'Обратный звонок',
+            dimensions: '-', facade_material: '-',
+            body_material: '-', color: '-',
+            wishes: '-', date: currentDate
+        };
+
+        sendToTelegram(telegramMessage);
+        sendToEmail(emailData);
+
+        const callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
+        callbacks.push({
+            name: formData.get('callbackName'),
+            phone: formData.get('callbackPhone'),
+            date: new Date().toISOString()
         });
+        localStorage.setItem('callbacks', JSON.stringify(callbacks));
 
-        console.log('%c🛠️ МебельПро - Система заявок', 'font-size:20px; color:#c9a87c; font-weight:bold');
-        console.log('%cЗаявки отправляются на email: mebel-proui@mail.ru', 'color:#27ae60');
-        console.log('%cПРИ ПЕРВОЙ ОТПРАВКЕ подтвердите email!', 'color:#e74c3c; font-size:14px; font-weight:bold');
+        alert('Спасибо! Мы перезвоним вам в течение 15 минут.');
+        closeCallModal();
+        this.reset();
+    });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-                closeCallModal();
-                closeMeasurerModal();
+    // ========== ФОРМА ЗАМЕРЩИКА ==========
+    document.getElementById('measurerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const currentDate = new Date().toLocaleString('ru-RU');
+
+        const telegramMessage = `
+📏 <b>ВЫЗОВ ЗАМЕРЩИКА</b>
+
+👤 Имя: ${formData.get('measurerName')}
+📞 Телефон: ${formData.get('measurerPhone')}
+📍 Адрес: ${formData.get('measurerAddress')}
+🕐 Дата: ${currentDate}`;
+
+        const emailData = {
+            subject: '📏 Вызов замерщика',
+            client_name: formData.get('measurerName'),
+            phone: formData.get('measurerPhone'),
+            email: '-',
+            address: formData.get('measurerAddress'),
+            furniture_type: 'Вызов замерщика',
+            dimensions: '-', facade_material: '-',
+            body_material: '-', color: '-',
+            wishes: '-', date: currentDate
+        };
+
+        sendToTelegram(telegramMessage);
+        sendToEmail(emailData);
+
+        const measurers = JSON.parse(localStorage.getItem('measurers') || '[]');
+        measurers.push({
+            name: formData.get('measurerName'),
+            phone: formData.get('measurerPhone'),
+            address: formData.get('measurerAddress'),
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('measurers', JSON.stringify(measurers));
+
+        alert('Спасибо! Замерщик приедет в удобное для вас время.');
+        closeMeasurerModal();
+        this.reset();
+    });
+
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modal')) closeModal();
+        if (e.target === document.getElementById('callModal')) closeCallModal();
+        if (e.target === document.getElementById('measurerModal')) closeMeasurerModal();
+    });
+
+    // ========== ТАЙМЕР ==========
+    function updateTimer() {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7);
+        endDate.setHours(23, 59, 59, 999);
+        
+        const now = new Date();
+        const distance = endDate - now;
+
+        if (distance < 0) {
+            document.querySelector('.timer').innerHTML = '<p style="font-size:22px">Акция завершена!</p>';
+            return;
+        }
+
+        document.getElementById('days').textContent = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+        document.getElementById('hours').textContent = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+
+    // ========== ПЛАВНАЯ ПРОКРУТКА ==========
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                const headerHeight = document.querySelector('header').offsetHeight;
+                window.scrollTo({ top: target.offsetTop - headerHeight - 20, behavior: 'smooth' });
             }
         });
-    </script>
+    });
+
+    // ========== АНИМАЦИИ ==========
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
+
+    document.querySelectorAll('.portfolio-item, .contact-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+
+    document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeCallModal();
+            closeMeasurerModal();
+        }
+    });
+
+    console.log('%c🛠️ МебельПро - Система заявок', 'font-size:20px; color:#c9a87c; font-weight:bold');
+    console.log('%c📱 Telegram + 📧 Email работают', 'color:#27ae60; font-size:14px');
+</script>
 </body>
 </html>
