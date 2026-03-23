@@ -1384,32 +1384,35 @@
 
     // ========== ФУНКЦИИ ОТПРАВКИ ==========
 function sendToTelegram(message) {
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    // Формируем URL для Telegram API
+    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     
-    fetch(url, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: message,
-            parse_mode: 'HTML'
-        })
+    // Параметры запроса
+    const params = new URLSearchParams({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'HTML'
+    });
+    
+    // Используем прокси для обхода CORS на мобильных устройствах
+    const corsProxy = 'https://corsproxy.io/?';
+    const fullUrl = corsProxy + encodeURIComponent(telegramUrl + '?' + params.toString());
+    
+    fetch(fullUrl, {
+        method: 'GET'
     })
     .then(response => response.json())
     .then(data => {
         if (data.ok) {
-            alert('✅ Заявка отправлена! Сообщение в Telegram получено.');
+            console.log('✅ Отправлено в Telegram');
         } else {
-            alert('❌ Ошибка Telegram: ' + data.description);
+            console.log('❌ Ошибка Telegram:', data.description);
         }
     })
     .catch(error => {
-        alert('❌ Ошибка соединения: ' + error.message);
+        console.error('❌ Ошибка отправки:', error);
     });
 }
-
     function sendToEmail(data) {
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
             .then(function() {
