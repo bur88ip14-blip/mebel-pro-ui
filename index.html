@@ -1383,25 +1383,32 @@
     const EMAILJS_TEMPLATE_ID = 'template_xm2v2xb';
 
     // ========== ФУНКЦИИ ОТПРАВКИ ==========
-    function sendToTelegram(message) {
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT_ID,
-                text: message,
-                parse_mode: 'HTML'
-            })
-        }).then(response => {
-            if (response.ok) {
-                console.log('✅ Отправлено в Telegram');
-            } else {
-                console.error('❌ Ошибка Telegram');
-            }
-        }).catch(error => {
-            console.error('❌ Ошибка Telegram:', error);
-        });
-    }
+function sendToTelegram(message) {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    
+    fetch(url, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'HTML'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            alert('✅ Заявка отправлена! Сообщение в Telegram получено.');
+        } else {
+            alert('❌ Ошибка Telegram: ' + data.description);
+        }
+    })
+    .catch(error => {
+        alert('❌ Ошибка соединения: ' + error.message);
+    });
+}
 
     function sendToEmail(data) {
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
