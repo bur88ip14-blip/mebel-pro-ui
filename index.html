@@ -1375,52 +1375,56 @@
     </footer>
 
 <script>
-    // ========== НАСТРОЙКИ =========
-    // ========== ФУНКЦИИ ОТПРАВКИ ==========
-function sendToTelegram(message, phone, formType) {
-    const WORKER_URL = 'https://old-dog-61.bur88ip14-blip.deno.net';
-    
-    fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            message: message,
-            phone: phone,
-            formType: formType
+    // ========== ФУНКЦИЯ ОТПРАВКИ В TELEGRAM И EMAIL ==========
+    function sendToTelegram(message, phone, formType) {
+        const WORKER_URL = 'https://old-dog-61.bur88ip14-blip.deno.net';
+        
+        fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message: message,
+                phone: phone,
+                formType: formType
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('✅ Отправлено в Telegram:', data.telegram);
-            console.log('✅ Отправлено на Email:', data.email);
-        } else {
-            console.error('❌ Ошибка:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('❌ Ошибка соединения:', error);
-    });
-}
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Отправлено в Telegram:', data.telegram);
+                console.log('✅ Отправлено на Email:', data.email);
+            } else {
+                console.error('❌ Ошибка:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка соединения:', error);
+        });
+    }
+
     // ========== МЕНЮ ==========
     const burger = document.getElementById('burger');
     const navLinks = document.getElementById('navLinks');
 
-    burger.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-    });
-
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
+    if (burger && navLinks) {
+        burger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
         });
-    });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+    }
 
     // ========== КОНСТРУКТОР ==========
     let currentStep = 1;
 
     function nextStep(step) {
         const currentStepEl = document.querySelector(`.step[data-step="${currentStep}"]`);
+        if (!currentStepEl) return;
+
         const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
         let valid = true;
 
@@ -1449,7 +1453,10 @@ function sendToTelegram(message, phone, formType) {
         document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
         currentStep = step;
 
-        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const formContainer = document.querySelector('.form-container');
+        if (formContainer) {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 
     function prevStep(step) {
@@ -1461,11 +1468,13 @@ function sendToTelegram(message, phone, formType) {
         currentStep = step;
     }
 
+    // Выбор карточки мебели
     document.querySelectorAll('.furniture-card').forEach(card => {
         card.addEventListener('click', function() {
             document.querySelectorAll('.furniture-card').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
-            this.querySelector('input[type="radio"]').checked = true;
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
         });
     });
 
@@ -1485,71 +1494,74 @@ function sendToTelegram(message, phone, formType) {
         }
     }
 
-    document.getElementById('phoneInput').addEventListener('input', function() {
-        phoneMask(this);
-    });
-    document.getElementById('callbackPhoneInput').addEventListener('input', function() {
-        phoneMask(this);
-    });
-    document.getElementById('measurerPhoneInput').addEventListener('input', function() {
-        phoneMask(this);
-    });
+    const phoneInputMain = document.getElementById('phoneInput');
+    const callbackPhoneInput = document.getElementById('callbackPhoneInput');
+    const measurerPhoneInput = document.getElementById('measurerPhoneInput');
+
+    if (phoneInputMain) {
+        phoneInputMain.addEventListener('input', function() {
+            phoneMask(this);
+        });
+    }
+
+    if (callbackPhoneInput) {
+        callbackPhoneInput.addEventListener('input', function() {
+            phoneMask(this);
+        });
+    }
+
+    if (measurerPhoneInput) {
+        measurerPhoneInput.addEventListener('input', function() {
+            phoneMask(this);
+        });
+    }
 
     // ========== ФОРМА КОНСТРУКТОРА ==========
-    document.getElementById('furnitureForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const data = {};
-        formData.forEach((value, key) => { data[key] = value; });
+    const furnitureForm = document.getElementById('furnitureForm');
+    if (furnitureForm) {
+        furnitureForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
 
-        const currentDate = new Date().toLocaleString('ru-RU');
+            const currentDate = new Date().toLocaleString('ru-RU');
 
-        const telegramMessage = `
-🛠️ <b>НОВАЯ ЗАЯВКА ИЗ КОНСТРУКТОРА</b>
+            const telegramMessage = `🛠️ <b>НОВАЯ ЗАЯВКА ИЗ КОНСТРУКТОРА</b>
 
-📦 Тип: ${data.furnitureType}
-📏 Размеры: ${data.width}×${data.height}×${data.depth} см
-🎨 Фасад: ${data.facadeMaterial}
-🔧 Корпус: ${data.bodyMaterial}
-🌈 Цвет: ${data.color}
+📦 Тип: ${data.furnitureType || 'Не указан'}
+📏 Размеры: ${data.width || '?'}×${data.height || '?'}×${data.depth || '?'} см
+🎨 Фасад: ${data.facadeMaterial || 'Не указан'}
+🔧 Корпус: ${data.bodyMaterial || 'Не указан'}
+🌈 Цвет: ${data.color || 'Не указан'}
 💬 Пожелания: ${data.wishes || 'Нет'}
 
-👤 Имя: ${data.clientName}
-📞 Телефон: ${data.phone}
+👤 Имя: ${data.clientName || 'Не указано'}
+📞 Телефон: ${data.phone || 'Не указан'}
 📧 Email: ${data.email || 'Не указан'}
 📍 Адрес: ${data.address || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-        const emailData = {
-            subject: '🛠️ Новая заявка из конструктора',
-            client_name: data.clientName,
-            phone: data.phone,
-            email: data.email || 'Не указан',
-            address: data.address || 'Не указан',
-            furniture_type: data.furnitureType,
-            dimensions: `${data.width}×${data.height}×${data.depth} см`,
-            facade_material: data.facadeMaterial,
-            body_material: data.bodyMaterial,
-            color: data.color,
-            wishes: data.wishes || 'Нет',
-            date: currentDate
-        };
+            sendToTelegram(telegramMessage, data.phone, 'constructor');
 
-        sendToTelegram(telegramMessage);
-        sendToEmail(emailData);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push({ ...data, date: new Date().toISOString(), id: Date.now() });
+            localStorage.setItem('orders', JSON.stringify(orders));
 
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push({ ...data, date: new Date().toISOString(), id: Date.now() });
-        localStorage.setItem('orders', JSON.stringify(orders));
-
-        document.querySelectorAll('.step').forEach(step => step.style.display = 'none');
-        document.querySelector('.progress-bar').style.display = 'none';
-        document.getElementById('successMessage').classList.add('show');
-    });
+            document.querySelectorAll('.step').forEach(step => step.style.display = 'none');
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) progressBar.style.display = 'none';
+            
+            const successMessage = document.getElementById('successMessage');
+            if (successMessage) successMessage.classList.add('show');
+        });
+    }
 
     function resetForm() {
-        document.getElementById('furnitureForm').reset();
+        if (!furnitureForm) return;
+        
+        furnitureForm.reset();
         document.querySelectorAll('.step').forEach(step => {
             step.classList.remove('active');
             step.style.display = '';
@@ -1558,12 +1570,20 @@ function sendToTelegram(message, phone, formType) {
             step.classList.remove('active', 'completed');
             if (index === 0) step.classList.add('active');
         });
-        document.querySelector('.step[data-step="1"]').classList.add('active');
-        document.getElementById('successMessage').classList.remove('show');
-        document.querySelector('.progress-bar').style.display = 'flex';
+        
+        const firstStep = document.querySelector('.step[data-step="1"]');
+        if (firstStep) firstStep.classList.add('active');
+        
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) successMessage.classList.remove('show');
+        
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) progressBar.style.display = 'flex';
+        
         document.querySelectorAll('.furniture-card').forEach(card => {
             card.classList.remove('selected');
         });
+        
         currentStep = 1;
     }
 
@@ -1596,6 +1616,7 @@ function sendToTelegram(message, phone, formType) {
         });
     });
 
+    // Данные портфолио
     const portfolioData = [
         {
             title: 'Современная кухня',
@@ -1631,133 +1652,143 @@ function sendToTelegram(message, phone, formType) {
         }
     ];
 
+    // Функции модальных окон
     function openModal(index) {
         const modal = document.getElementById('modal');
-        document.getElementById('modalImage').src = portfolioItems[index].querySelector('img').src;
-        document.getElementById('modalTitle').textContent = portfolioData[index].title;
-        document.getElementById('modalDescription').textContent = portfolioData[index].description;
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        
+        if (modal && modalImage && modalTitle && modalDescription && portfolioItems[index]) {
+            const img = portfolioItems[index].querySelector('img');
+            if (img) modalImage.src = img.src;
+            modalTitle.textContent = portfolioData[index].title;
+            modalDescription.textContent = portfolioData[index].description;
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeModal() {
-        document.getElementById('modal').classList.remove('show');
-        document.body.style.overflow = 'auto';
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
     }
 
     function openCallModal() {
-        document.getElementById('callModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
+        const callModal = document.getElementById('callModal');
+        if (callModal) {
+            callModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeCallModal() {
-        document.getElementById('callModal').classList.remove('show');
-        document.body.style.overflow = 'auto';
+        const callModal = document.getElementById('callModal');
+        if (callModal) {
+            callModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
     }
 
     function openMeasurerModal() {
-        document.getElementById('measurerModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
+        const measurerModal = document.getElementById('measurerModal');
+        if (measurerModal) {
+            measurerModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeMeasurerModal() {
-        document.getElementById('measurerModal').classList.remove('show');
-        document.body.style.overflow = 'auto';
+        const measurerModal = document.getElementById('measurerModal');
+        if (measurerModal) {
+            measurerModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
     }
 
     // ========== ФОРМА ОБРАТНОГО ЗВОНКА ==========
-    document.getElementById('callbackForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const currentDate = new Date().toLocaleString('ru-RU');
+    const callbackForm = document.getElementById('callbackForm');
+    if (callbackForm) {
+        callbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const currentDate = new Date().toLocaleString('ru-RU');
 
-        const telegramMessage = `
-📞 <b>ЗАКАЗ ОБРАТНОГО ЗВОНКА</b>
+            const telegramMessage = `📞 <b>ЗАКАЗ ОБРАТНОГО ЗВОНКА</b>
 
-👤 Имя: ${formData.get('callbackName')}
-📞 Телефон: ${formData.get('callbackPhone')}
+👤 Имя: ${formData.get('callbackName') || 'Не указано'}
+📞 Телефон: ${formData.get('callbackPhone') || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-        const emailData = {
-            subject: '📞 Заказ обратного звонка',
-            client_name: formData.get('callbackName'),
-            phone: formData.get('callbackPhone'),
-            email: '-', address: '-',
-            furniture_type: 'Обратный звонок',
-            dimensions: '-', facade_material: '-',
-            body_material: '-', color: '-',
-            wishes: '-', date: currentDate
-        };
+            sendToTelegram(telegramMessage, formData.get('callbackPhone'), 'callback');
 
-        sendToTelegram(telegramMessage);
-        sendToEmail(emailData);
+            const callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
+            callbacks.push({
+                name: formData.get('callbackName'),
+                phone: formData.get('callbackPhone'),
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('callbacks', JSON.stringify(callbacks));
 
-        const callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
-        callbacks.push({
-            name: formData.get('callbackName'),
-            phone: formData.get('callbackPhone'),
-            date: new Date().toISOString()
+            alert('✅ Спасибо! Мы перезвоним вам в течение 15 минут.');
+            closeCallModal();
+            this.reset();
         });
-        localStorage.setItem('callbacks', JSON.stringify(callbacks));
-
-        alert('Спасибо! Мы перезвоним вам в течение 15 минут.');
-        closeCallModal();
-        this.reset();
-    });
+    }
 
     // ========== ФОРМА ЗАМЕРЩИКА ==========
-    document.getElementById('measurerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const currentDate = new Date().toLocaleString('ru-RU');
+    const measurerForm = document.getElementById('measurerForm');
+    if (measurerForm) {
+        measurerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const currentDate = new Date().toLocaleString('ru-RU');
 
-        const telegramMessage = `
-📏 <b>ВЫЗОВ ЗАМЕРЩИКА</b>
+            const telegramMessage = `📏 <b>ВЫЗОВ ЗАМЕРЩИКА</b>
 
-👤 Имя: ${formData.get('measurerName')}
-📞 Телефон: ${formData.get('measurerPhone')}
-📍 Адрес: ${formData.get('measurerAddress')}
+👤 Имя: ${formData.get('measurerName') || 'Не указано'}
+📞 Телефон: ${formData.get('measurerPhone') || 'Не указан'}
+📍 Адрес: ${formData.get('measurerAddress') || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-        const emailData = {
-            subject: '📏 Вызов замерщика',
-            client_name: formData.get('measurerName'),
-            phone: formData.get('measurerPhone'),
-            email: '-',
-            address: formData.get('measurerAddress'),
-            furniture_type: 'Вызов замерщика',
-            dimensions: '-', facade_material: '-',
-            body_material: '-', color: '-',
-            wishes: '-', date: currentDate
-        };
+            sendToTelegram(telegramMessage, formData.get('measurerPhone'), 'measurer');
 
-        sendToTelegram(telegramMessage);
-        sendToEmail(emailData);
+            const measurers = JSON.parse(localStorage.getItem('measurers') || '[]');
+            measurers.push({
+                name: formData.get('measurerName'),
+                phone: formData.get('measurerPhone'),
+                address: formData.get('measurerAddress'),
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('measurers', JSON.stringify(measurers));
 
-        const measurers = JSON.parse(localStorage.getItem('measurers') || '[]');
-        measurers.push({
-            name: formData.get('measurerName'),
-            phone: formData.get('measurerPhone'),
-            address: formData.get('measurerAddress'),
-            date: new Date().toISOString()
+            alert('✅ Спасибо! Замерщик приедет в удобное для вас время.');
+            closeMeasurerModal();
+            this.reset();
         });
-        localStorage.setItem('measurers', JSON.stringify(measurers));
+    }
 
-        alert('Спасибо! Замерщик приедет в удобное для вас время.');
-        closeMeasurerModal();
-        this.reset();
-    });
-
+    // Закрытие модальных окон по клику вне их
     window.addEventListener('click', function(e) {
         if (e.target === document.getElementById('modal')) closeModal();
         if (e.target === document.getElementById('callModal')) closeCallModal();
         if (e.target === document.getElementById('measurerModal')) closeMeasurerModal();
     });
 
-    // ========== ТАЙМЕР ==========
+    // ========== ТАЙМЕР АКЦИИ ==========
     function updateTimer() {
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        
+        if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 7);
         endDate.setHours(23, 59, 59, 999);
@@ -1766,14 +1797,17 @@ function sendToTelegram(message, phone, formType) {
         const distance = endDate - now;
 
         if (distance < 0) {
-            document.querySelector('.timer').innerHTML = '<p style="font-size:22px">Акция завершена!</p>';
+            const timer = document.querySelector('.timer');
+            if (timer) {
+                timer.innerHTML = '<p style="font-size:22px">Акция завершена!</p>';
+            }
             return;
         }
 
-        document.getElementById('days').textContent = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-        document.getElementById('hours').textContent = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-        document.getElementById('minutes').textContent = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-        document.getElementById('seconds').textContent = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        daysEl.textContent = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+        hoursEl.textContent = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+        minutesEl.textContent = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        secondsEl.textContent = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
     }
 
     updateTimer();
@@ -1785,13 +1819,17 @@ function sendToTelegram(message, phone, formType) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
-                const headerHeight = document.querySelector('header').offsetHeight;
-                window.scrollTo({ top: target.offsetTop - headerHeight - 20, behavior: 'smooth' });
+                const header = document.querySelector('header');
+                const headerHeight = header ? header.offsetHeight : 0;
+                window.scrollTo({ 
+                    top: target.offsetTop - headerHeight - 20, 
+                    behavior: 'smooth' 
+                });
             }
         });
     });
 
-    // ========== АНИМАЦИИ ==========
+    // ========== АНИМАЦИИ ПРИ СКРОЛЛЕ ==========
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1808,15 +1846,21 @@ function sendToTelegram(message, phone, formType) {
         observer.observe(el);
     });
 
+    // Анимация полей ввода
     document.querySelectorAll('input, select').forEach(input => {
         input.addEventListener('focus', function() {
-            this.parentElement.style.transform = 'scale(1.02)';
+            if (this.parentElement) {
+                this.parentElement.style.transform = 'scale(1.02)';
+            }
         });
         input.addEventListener('blur', function() {
-            this.parentElement.style.transform = 'scale(1)';
+            if (this.parentElement) {
+                this.parentElement.style.transform = 'scale(1)';
+            }
         });
     });
 
+    // Закрытие модальных окон по ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();
@@ -1825,8 +1869,9 @@ function sendToTelegram(message, phone, formType) {
         }
     });
 
-    console.log('%c🛠️ МебельПро - Система заявок', 'font-size:20px; color:#c9a87c; font-weight:bold');
-    console.log('%c📱 Telegram + 📧 Email работают', 'color:#27ae60; font-size:14px');
+    // Логи в консоль
+    console.log('%c🛠️ МебельПро - Система заявок активна', 'font-size:20px; color:#c9a87c; font-weight:bold');
+    console.log('%c📱 Telegram + 📧 Email работают через Worker', 'color:#27ae60; font-size:14px');
 </script>
 </body>
 </html>
