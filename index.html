@@ -1375,30 +1375,48 @@
     </footer>
 
 <script>
-    // ========== ФУНКЦИЯ ОТПРАВКИ В TELEGRAM И EMAIL ==========
-    function sendToTelegram(message, phone, formType) {
+    // ========== ИНИЦИАЛИЗАЦИЯ EMAIL.JS ==========
+    (function() {
+        emailjs.init("qmLyt70JU0pHL5GXc");
+    })();
+
+    // ========== ФУНКЦИЯ ОТПРАВКИ В TELEGRAM ==========
+    function sendToTelegram(message) {
         const WORKER_URL = 'https://old-dog-61.bur88ip14-blip.deno.net';
         
         fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: message,
-                phone: phone,
-                formType: formType
-            })
+            body: JSON.stringify({ message: message })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('✅ Отправлено в Telegram:', data.telegram);
-                console.log('✅ Отправлено на Email:', data.email);
+                console.log('✅ Отправлено в Telegram');
             } else {
-                console.error('❌ Ошибка:', data.error);
+                console.error('❌ Ошибка Telegram:', data.error);
             }
         })
         .catch(error => {
             console.error('❌ Ошибка соединения:', error);
+        });
+    }
+
+    // ========== ФУНКЦИЯ ОТПРАВКИ НА EMAIL ==========
+    function sendToEmail(data) {
+        emailjs.send('service_1251zcu', 'template_xm2v2xb', {
+            message: data.message,
+            phone: data.phone || 'Не указан',
+            form_type: data.formType || 'Заявка',
+            client_name: data.name || 'Не указано',
+            email: data.email || 'Не указан',
+            address: data.address || 'Не указан'
+        })
+        .then(() => {
+            console.log('✅ Email отправлен');
+        })
+        .catch((error) => {
+            console.error('❌ Ошибка Email:', error);
         });
     }
 
@@ -1543,7 +1561,18 @@
 📍 Адрес: ${data.address || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-            sendToTelegram(telegramMessage, data.phone, 'constructor');
+            // Отправка в Telegram
+            sendToTelegram(telegramMessage);
+            
+            // Отправка на Email
+            sendToEmail({
+                message: telegramMessage,
+                phone: data.phone,
+                formType: 'Конструктор мебели',
+                name: data.clientName,
+                email: data.email,
+                address: data.address
+            });
 
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             orders.push({ ...data, date: new Date().toISOString(), id: Date.now() });
@@ -1724,7 +1753,16 @@
 📞 Телефон: ${formData.get('callbackPhone') || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-            sendToTelegram(telegramMessage, formData.get('callbackPhone'), 'callback');
+            // Отправка в Telegram
+            sendToTelegram(telegramMessage);
+            
+            // Отправка на Email
+            sendToEmail({
+                message: telegramMessage,
+                phone: formData.get('callbackPhone'),
+                formType: 'Обратный звонок',
+                name: formData.get('callbackName')
+            });
 
             const callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
             callbacks.push({
@@ -1756,7 +1794,17 @@
 📍 Адрес: ${formData.get('measurerAddress') || 'Не указан'}
 🕐 Дата: ${currentDate}`;
 
-            sendToTelegram(telegramMessage, formData.get('measurerPhone'), 'measurer');
+            // Отправка в Telegram
+            sendToTelegram(telegramMessage);
+            
+            // Отправка на Email
+            sendToEmail({
+                message: telegramMessage,
+                phone: formData.get('measurerPhone'),
+                formType: 'Вызов замерщика',
+                name: formData.get('measurerName'),
+                address: formData.get('measurerAddress')
+            });
 
             const measurers = JSON.parse(localStorage.getItem('measurers') || '[]');
             measurers.push({
@@ -1871,7 +1919,8 @@
 
     // Логи в консоль
     console.log('%c🛠️ МебельПро - Система заявок активна', 'font-size:20px; color:#c9a87c; font-weight:bold');
-    console.log('%c📱 Telegram + 📧 Email работают через Worker', 'color:#27ae60; font-size:14px');
+    console.log('%c📱 Telegram работает через Worker', 'color:#27ae60; font-size:14px');
+    console.log('%c📧 Email работает через Email.js', 'color:#3498db; font-size:14px');
 </script>
 </body>
 </html>
