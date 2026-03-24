@@ -1395,7 +1395,7 @@ function sendToTelegram(message) {
     });
     
     // Используем прокси для обхода CORS на мобильных устройствах
-    const corsProxy = 'https://api.allorigins.win/raw?url=';
+    const corsProxy = 'https://api.codetabs.com/v1/proxy?quest=';
     const fullUrl = corsProxy + encodeURIComponent(telegramUrl + '?' + params.toString());
     
     fetch(fullUrl, {
