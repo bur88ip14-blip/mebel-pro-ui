@@ -959,7 +959,6 @@
             color: #c9a87c;
         }
     </style>
- <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
         emailjs.init("qmLyt70JU0pHL5GXc");
     </script>
@@ -1376,25 +1375,25 @@
     </footer>
 
 <script>
-    // ========== НАСТРОЙКИ ==========
-    const TELEGRAM_BOT_TOKEN = '8781246097:AAH6f_p0SCBAySoByP-hG-hjrJ3qoXPPGD8';
-    const TELEGRAM_CHAT_ID = '863776657';
-    const EMAILJS_SERVICE_ID = 'service_1251zcu';
-    const EMAILJS_TEMPLATE_ID = 'template_xm2v2xb';
-
+    // ========== НАСТРОЙКИ =========
     // ========== ФУНКЦИИ ОТПРАВКИ ==========
-function sendToTelegram(message) {
+function sendToTelegram(message, phone, formType) {
     const WORKER_URL = 'https://old-dog-61.bur88ip14-blip.deno.net';
     
     fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message })
+        body: JSON.stringify({ 
+            message: message,
+            phone: phone,
+            formType: formType
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Отправлено в Telegram');
+            console.log('✅ Отправлено в Telegram:', data.telegram);
+            console.log('✅ Отправлено на Email:', data.email);
         } else {
             console.error('❌ Ошибка:', data.error);
         }
@@ -1403,16 +1402,6 @@ function sendToTelegram(message) {
         console.error('❌ Ошибка соединения:', error);
     });
 }
-    function sendToEmail(data) {
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
-            .then(function() {
-                console.log('✅ Отправлено на Email');
-            })
-            .catch(function(error) {
-                console.error('❌ Ошибка Email:', error);
-            });
-    }
-
     // ========== МЕНЮ ==========
     const burger = document.getElementById('burger');
     const navLinks = document.getElementById('navLinks');
