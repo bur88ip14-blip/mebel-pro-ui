@@ -1384,25 +1384,24 @@
 
     // ========== ФУНКЦИИ ОТПРАВКИ ==========
 function sendToTelegram(message) {
-    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const WORKER_URL = 'https://old-dog-61.bur88ip14-blip.deno.net';
     
-    const params = new URLSearchParams({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
+    fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Отправлено в Telegram');
+        } else {
+            console.error('❌ Ошибка:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Ошибка соединения:', error);
     });
-    
-    // Используем трюк с изображением (работает на 100% устройств)
-    const img = new Image();
-    img.src = `${telegramUrl}?${params.toString()}`;
-    
-    img.onload = function() {
-        console.log('✅ Отправлено в Telegram');
-    };
-    
-    img.onerror = function() {
-        console.log('✅ Запрос отправлен (метод изображения)');
-    };
 }
     function sendToEmail(data) {
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data)
